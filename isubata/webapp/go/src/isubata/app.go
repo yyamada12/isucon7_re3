@@ -380,6 +380,11 @@ func jsonifyMessageByUsers(m Message, users map[int64]User) (map[string]interfac
 }
 
 func getUsers(userIDs []int64) map[int64]User {
+	res := make(map[int64]User)
+
+	if len(userIDs) == 0 {
+		return res
+	}
 
 	qs, params, err := sqlx.In(`SELECT id, name, display_name, avatar_icon FROM user WHERE id IN (?)`, userIDs)
 	if err != nil {
@@ -391,7 +396,6 @@ func getUsers(userIDs []int64) map[int64]User {
 		log.Fatal(err)
 	}
 
-	res := make(map[int64]User)
 	for _, user := range users {
 		res[user.ID] = user
 	}
@@ -563,11 +567,30 @@ func getHistory(c echo.Context) error {
 		return err
 	}
 
+	userIDs := []int64{}
+	for _, m := range messages {
+		userIDs = append(userIDs, m.UserID)
+	}
+
+	users := getUsers(userIDs)
+
+	println(users)
+
 	mjson := make([]map[string]interface{}, 0)
 	for i := len(messages) - 1; i >= 0; i-- {
 		r, err := jsonifyMessage(messages[i])
 		if err != nil {
 			return err
+		}
+		r_, err := jsonifyMessageByUsers(messages[i], users)
+		if err != nil {
+			return err
+		}
+
+		rn := r["user"].(User).Name
+		r_n := r_["user"].(User).Name
+		if rn != r_n {
+			println("NOOOOOOOOOOOOO", rn, r_n)
 		}
 		mjson = append(mjson, r)
 	}
