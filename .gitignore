@@ -16,3 +16,4 @@ isubata/webapp/go/src/isubata/vendor
 isubata/files
 !.bash_profile
 /pprof
+isubata/webapp/public/icons/

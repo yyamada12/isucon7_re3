@@ -664,7 +664,8 @@ func postProfile(c echo.Context) error {
 	}
 
 	if avatarName != "" && len(avatarData) > 0 {
-		_, err := db.Exec("INSERT INTO image (name, data) VALUES (?, ?)", avatarName, avatarData)
+
+		err := ioutil.WriteFile("/home/isucon/isubata/webapp/public/icons/"+avatarName, avatarData, 0666)
 		if err != nil {
 			return err
 		}
@@ -722,6 +723,28 @@ func tRange(a, b int64) []int64 {
 	return r
 }
 
+type PngData struct {
+	Name string
+	Data []byte
+}
+
+func createPngFiles(c echo.Context) error {
+
+	datas := []PngData{}
+	err := db.Select(&datas, "SELECT name, data FROM image")
+	if err != nil {
+		return c.String(500, err.Error())
+	}
+	for _, data := range datas {
+		err := ioutil.WriteFile("/home/isucon/isubata/webapp/public/icons/"+data.Name, data.Data, 0666)
+		if err != nil {
+			fmt.Println(os.Stderr, err)
+		}
+	}
+
+	return c.String(http.StatusOK, "OK")
+}
+
 func main() {
 
 	go func() {
@@ -741,6 +764,8 @@ func main() {
 		Format: "request:\"${method} ${uri}\" status:${status} latency:${latency} (${latency_human}) bytes:${bytes_out}\n",
 	}))
 	e.Use(middleware.Static("../public"))
+
+	e.GET("/create_png", createPngFiles)
 
 	e.GET("/initialize", getInitialize)
 	e.GET("/", getIndex)
