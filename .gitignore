@@ -1,0 +1,16 @@
+isubata/webapp/nodejs/
+isubata/webapp/python/
+isubata/webapp/perl/
+isubata/webapp/php/
+isubata/webapp/ruby/
+isubata/webapp/rust/
+.*
+!.gitignore
+!.bashrc
+local/
+xbuild/
+/go/
+isubata/provisioning
+isubata/bench
+isubata/webapp/go/src/isubata/vendor
+isubata/files
