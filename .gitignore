@@ -14,3 +14,4 @@ isubata/provisioning
 isubata/bench
 isubata/webapp/go/src/isubata/vendor
 isubata/files
+!.bash_profile

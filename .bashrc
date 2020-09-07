@@ -139,3 +139,7 @@ alias pps='go tool pprof -png -output ~/pprof/pprof.png http://localhost:6060/de
 
 stty stop undef
 
+alias deploy='~/isubata/webapp/go/script/deploy.sh'
+alias applog='sudo journalctl -f -u isubata.golang'
+
+alias mycnf='sudo cp ~/etc/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf'
