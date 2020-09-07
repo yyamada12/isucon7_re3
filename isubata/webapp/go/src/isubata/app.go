@@ -368,6 +368,37 @@ func jsonifyMessage(m Message) (map[string]interface{}, error) {
 	return r, nil
 }
 
+func jsonifyMessageByUsers(m Message, users map[int64]User) (map[string]interface{}, error) {
+	u := users[m.UserID]
+
+	r := make(map[string]interface{})
+	r["id"] = m.ID
+	r["user"] = u
+	r["date"] = m.CreatedAt.Format("2006/01/02 15:04:05")
+	r["content"] = m.Content
+	return r, nil
+}
+
+func getUsers(userIDs []int64) map[int64]User {
+
+	qs, params, err := sqlx.In(`SELECT id, name, display_name, avatar_icon FROM user WHERE id IN (?)`, userIDs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	users := []User{}
+	if err := db.Select(&users, qs, params...); err != nil {
+		log.Fatal(err)
+	}
+
+	res := make(map[int64]User)
+	for _, user := range users {
+		res[user.ID] = user
+	}
+
+	return res
+}
+
 func getMessage(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
@@ -388,10 +419,17 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
+	userIDs := []int64{}
+	for _, m := range messages {
+		userIDs = append(userIDs, m.UserID)
+	}
+
+	users := getUsers(userIDs)
+
 	response := make([]map[string]interface{}, 0)
 	for i := len(messages) - 1; i >= 0; i-- {
 		m := messages[i]
-		r, err := jsonifyMessage(m)
+		r, err := jsonifyMessageByUsers(m, users)
 		if err != nil {
 			return err
 		}
