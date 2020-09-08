@@ -574,24 +574,13 @@ func getHistory(c echo.Context) error {
 
 	users := getUsers(userIDs)
 
-	println(users)
-
 	mjson := make([]map[string]interface{}, 0)
 	for i := len(messages) - 1; i >= 0; i-- {
-		r, err := jsonifyMessage(messages[i])
-		if err != nil {
-			return err
-		}
-		r_, err := jsonifyMessageByUsers(messages[i], users)
+		r, err := jsonifyMessageByUsers(messages[i], users)
 		if err != nil {
 			return err
 		}
 
-		rn := r["user"].(User).Name
-		r_n := r_["user"].(User).Name
-		if rn != r_n {
-			println("NOOOOOOOOOOOOO", rn, r_n)
-		}
 		mjson = append(mjson, r)
 	}
 
