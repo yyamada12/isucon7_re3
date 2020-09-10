@@ -554,13 +554,7 @@ func fetchUnread(c echo.Context) error {
 	havereads := getHaveReads(userID, channels)
 
 	for _, chID := range channels {
-		lastID, err := queryHaveRead(userID, chID)
-		if err != nil {
-			return err
-		}
-		if lastID != havereads[chID] {
-			println("NOOOOOOOOOOOO", lastID, havereads[chID])
-		}
+		lastID := havereads[chID] 
 
 		var cnt int64
 		if lastID > 0 {
