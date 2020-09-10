@@ -499,6 +499,41 @@ func getMessageCounts() map[int64]int64 {
 	return res
 }
 
+func getHaveReads(userID int64, chIDs []int64) map[int64]int64 {
+	res := make(map[int64]int64)
+
+	type HaveRead struct {
+		ChannelID int64 `db:"channel_id"`
+		MessageID int64 `db:"message_id"`
+	}
+
+	if len(chIDs) == 0 {
+		return res
+	}
+	for _, chID := range chIDs {
+		res[chID] = 0
+	}
+
+	qs, params, err := sqlx.In(`SELECT channel_id, message_id FROM haveread WHERE user_id = ? AND channel_id IN (?)`, userID, chIDs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	havereads := []HaveRead{}
+	if err := db.Select(&havereads, qs, params...); err == sql.ErrNoRows {
+		return res
+	} else if err != nil {
+		println(err)
+		return res
+	}
+
+	for _, hr := range havereads {
+		res[hr.ChannelID] = hr.MessageID
+	}
+
+	return res
+}
+
 func fetchUnread(c echo.Context) error {
 	userID := sessUserID(c)
 	if userID == 0 {
@@ -516,10 +551,15 @@ func fetchUnread(c echo.Context) error {
 
 	counts := getMessageCounts()
 
+	havereads := getHaveReads(userID, channels)
+
 	for _, chID := range channels {
 		lastID, err := queryHaveRead(userID, chID)
 		if err != nil {
 			return err
+		}
+		if lastID != havereads[chID] {
+			println("NOOOOOOOOOOOO", lastID, havereads[chID])
 		}
 
 		var cnt int64
