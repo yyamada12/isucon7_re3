@@ -540,7 +540,7 @@ func fetchUnread(c echo.Context) error {
 		return c.NoContent(http.StatusForbidden)
 	}
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 
 	channels, err := queryChannels()
 	if err != nil {
@@ -554,7 +554,7 @@ func fetchUnread(c echo.Context) error {
 	havereads := getHaveReads(userID, channels)
 
 	for _, chID := range channels {
-		lastID := havereads[chID] 
+		lastID := havereads[chID]
 
 		var cnt int64
 		if lastID > 0 {
